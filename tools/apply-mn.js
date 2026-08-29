@@ -11,6 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const root = path.resolve(__dirname, '..');
 const out = (s) => process.stdout.write(s + '\n');
@@ -68,13 +69,30 @@ if (!/<option value="mn"/.test(html)) {
   out('index.html: added Монгол to the language picker');
 }
 
-// 2b. load our patch script after every vendor script
-if (!/js\/peaklab\.js/.test(html)) {
+// 2b. load our patch script after every vendor script.
+//     Versioned by content hash: GitHub Pages serves assets with a ~10 minute
+//     max-age, and the vendor's own scripts dodge that with ?v=..., so ours
+//     needs the same or a fix can sit behind a stale cached copy.
+const peaklabPath = path.join(root, 'js', 'peaklab.js');
+const hash = crypto
+  .createHash('sha1')
+  .update(fs.readFileSync(peaklabPath))
+  .digest('hex')
+  .slice(0, 8);
+const scriptTag = '<script type="text/javascript" src="js/peaklab.js?v=' + hash + '"></script>';
+
+if (/src="js\/peaklab\.js/.test(html)) {
+  const existing = html.match(/<script[^>]*src="js\/peaklab\.js[^"]*"><\/script>/);
+  if (existing && existing[0] !== scriptTag) {
+    html = html.replace(existing[0], scriptTag);
+    out('index.html: peaklab.js cache tag -> ?v=' + hash);
+  }
+} else {
   html = html.replace(
     /([ \t]*)(<script[^>]+src="js\/clearCache\.min\.js[^"]*"><\/script>)/,
-    '$1$2\n$1<script type="text/javascript" src="js/peaklab.js"></script>'
+    '$1$2\n$1' + scriptTag
   );
-  out('index.html: added js/peaklab.js');
+  out('index.html: added js/peaklab.js?v=' + hash);
 }
 
 // 2c. declare Mongolian as the document language

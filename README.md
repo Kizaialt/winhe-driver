@@ -75,6 +75,12 @@ git add -A && git commit -m "Update" && git push
 Repo-гийн **Settings → Pages → Source: Deploy from a branch → main / (root)**.
 1–2 минутын дараа `https://<хэрэглэгч>.github.io/<repo>/` дээр ажиллаж эхэлнэ.
 
+**Кэшийн тухай.** GitHub Pages файлуудыг ~10 минут кэшлэдэг. Push хийсний
+дараа шууд шалгах гэвэл **Ctrl+F5** (hard refresh) дарна уу, эсвэл 10 минут
+хүлээнэ. `js/peaklab.js` нь агуулгынхаа hash-тай (`?v=42bb57ae` маягаар)
+ачаалагддаг тул засвар хийхэд шууд шинэчлэгдэнэ — `apply-mn.js` энэ дугаарыг
+автоматаар шинэчилдэг.
+
 GitHub Pages нь HTTPS өгдөг тул WebHID шууд ажиллана. `.nojekyll` файл нь
 Jekyll-ийг унтраахад хэрэгтэй.
 
