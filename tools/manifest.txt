@@ -32,6 +32,23 @@ image/dark/icon_folder.png
 image/dark/icon_insert.png
 image/dark/icon_interchange.png
 image/dark/icon_keyboard.png
+image/dark/icon_lightMode0.png
+image/dark/icon_lightMode1.png
+image/dark/icon_lightMode10.png
+image/dark/icon_lightMode100.png
+image/dark/icon_lightMode11.png
+image/dark/icon_lightMode12.png
+image/dark/icon_lightMode14.png
+image/dark/icon_lightMode15.png
+image/dark/icon_lightMode16.png
+image/dark/icon_lightMode2.png
+image/dark/icon_lightMode3.png
+image/dark/icon_lightMode4.png
+image/dark/icon_lightMode5.png
+image/dark/icon_lightMode6.png
+image/dark/icon_lightMode7.png
+image/dark/icon_lightMode8.png
+image/dark/icon_lightMode9.png
 image/dark/icon_lock.png
 image/dark/icon_more.png
 image/dark/icon_mouse.png
@@ -52,6 +69,7 @@ image/dark/menu_actuation.png
 image/dark/menu_advanced.png
 image/dark/menu_keymap.png
 image/dark/menu_light.png
+image/dark/menu_macro.png
 image/dark/menu_other.png
 image/dark/menu_prcs.png
 image/dark/menu_special.png
@@ -88,6 +106,7 @@ image/icon_folder.png
 image/icon_insert.png
 image/icon_interchange.png
 image/icon_keyboard.png
+image/icon_lightMode7.png
 image/icon_lock.png
 image/icon_more.png
 image/icon_mouse.png
@@ -111,6 +130,7 @@ image/menu_actuation.png
 image/menu_advanced.png
 image/menu_keymap.png
 image/menu_light.png
+image/menu_macro.png
 image/menu_other.png
 image/menu_prcs.png
 image/menu_special.png

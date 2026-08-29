@@ -17,6 +17,51 @@
 (function () {
   'use strict';
 
+  /* ------------------------------------------------------------------
+   * Sub-path support.
+   *
+   * The vendor site lives at a domain root, so its `../config/x` and
+   * `url("../image/x")` references resolve to `/config/x` and `/image/x` -
+   * the `..` is a no-op there. Served from a sub-path such as
+   * /winhe-driver/, the same strings climb out of the site and 404.
+   *
+   * Rather than edit obfuscated vendor files, rewrite the two places those
+   * strings are used: fetch() calls, and the themes lookup table.
+   * At a domain root this is a no-op, so it stays correct if the site later
+   * moves to its own domain.
+   * ------------------------------------------------------------------ */
+  var BASE = location.pathname.replace(/[^/]*$/, ''); // '/winhe-driver/' or '/'
+
+  function rebase(u) {
+    return typeof u === 'string' ? u.replace(/\.\.\//g, BASE) : u;
+  }
+
+  if (BASE !== '/') {
+    if (typeof window.fetch === 'function') {
+      var nativeFetch = window.fetch.bind(window);
+      window.fetch = function (input, init) {
+        return nativeFetch(typeof input === 'string' ? rebase(input) : input, init);
+      };
+    }
+
+    /* themes.min.js declares `themes` at top level; classic scripts share the
+       global lexical scope, so it is reachable here. Its values are CSS
+       strings like url("../image/icon_close.png"). */
+    try {
+      if (typeof themes === 'object' && themes) {
+        for (var name in themes) {
+          var table = themes[name];
+          if (!table) continue;
+          for (var k in table) {
+            if (typeof table[k] === 'string' && table[k].indexOf('../') !== -1) {
+              table[k] = rebase(table[k]);
+            }
+          }
+        }
+      }
+    } catch (e) { /* themes not exposed; icons fall back to CSS defaults */ }
+  }
+
   /* ---- Branding. Change these two lines, nothing else. ---- */
   var PAGE_TITLE = 'AULA WIN60 HE / WIN68 HE — Peaklab';
   var WELCOME_KEY = 'welcomeSuoai'; // 'welcome' = unbranded, 'welcomeSuoai' = AULA

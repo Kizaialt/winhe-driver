@@ -15,6 +15,18 @@ const url = require('url');
 const root = path.resolve(__dirname, '..');
 const port = Number(process.env.PORT) || 8099;
 
+/* Serve under a sub-path to mirror GitHub Pages exactly:
+ *   BASE=winhe-driver node tools/serve.js
+ * Without it the site is served at the root, like the vendor's own domain.
+ * Leading/trailing slashes optional - Git Bash rewrites a leading slash into
+ * a Windows path, so the bare name is the documented form. */
+const base = (() => {
+  let b = process.env.BASE || '';
+  b = b.replace(/^.*[\\/](?=[^\\/]+$)/, ''); // survive MSYS path mangling
+  b = b.replace(/^\/+|\/+$/g, '');
+  return b ? '/' + b : '';
+})();
+
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -38,6 +50,19 @@ http
     } catch (e) {
       res.writeHead(400).end('bad request');
       return;
+    }
+    if (base) {
+      if (pathname === base) {
+        res.writeHead(302, { Location: base + '/' }).end();
+        return;
+      }
+      if (pathname.startsWith(base + '/')) {
+        pathname = pathname.slice(base.length);
+      } else {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('404 (outside ' + base + '/)');
+        return;
+      }
     }
     if (pathname === '/') pathname = '/index.html';
 
@@ -63,5 +88,5 @@ http
   })
   .listen(port, () => {
     process.stdout.write('serving ' + root + '\n');
-    process.stdout.write('http://localhost:' + port + '\n');
+    process.stdout.write('http://localhost:' + port + (base || '') + '/\n');
   });
