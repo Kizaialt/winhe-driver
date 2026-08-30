@@ -125,6 +125,7 @@ image/key_switch_fore.png
 image/key_switch_thumb.png
 image/language.png
 image/logo.png
+image/logo_suoai.png
 image/logo_suoai_icon.png
 image/menu_actuation.png
 image/menu_advanced.png

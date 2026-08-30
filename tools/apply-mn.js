@@ -73,26 +73,31 @@ if (!/<option value="mn"/.test(html)) {
 //     Versioned by content hash: GitHub Pages serves assets with a ~10 minute
 //     max-age, and the vendor's own scripts dodge that with ?v=..., so ours
 //     needs the same or a fix can sit behind a stale cached copy.
-const peaklabPath = path.join(root, 'js', 'peaklab.js');
-const hash = crypto
-  .createHash('sha1')
-  .update(fs.readFileSync(peaklabPath))
-  .digest('hex')
-  .slice(0, 8);
-const scriptTag = '<script type="text/javascript" src="js/peaklab.js?v=' + hash + '"></script>';
+const OURS = ['peaklab.js', 'demo.js'];
+let anchor = /([ \t]*)(<script[^>]+src="js\/clearCache\.min\.js[^"]*"><\/script>)/;
 
-if (/src="js\/peaklab\.js/.test(html)) {
-  const existing = html.match(/<script[^>]*src="js\/peaklab\.js[^"]*"><\/script>/);
-  if (existing && existing[0] !== scriptTag) {
-    html = html.replace(existing[0], scriptTag);
-    out('index.html: peaklab.js cache tag -> ?v=' + hash);
+for (const name of OURS) {
+  const file = path.join(root, 'js', name);
+  const hash = crypto
+    .createHash('sha1')
+    .update(fs.readFileSync(file))
+    .digest('hex')
+    .slice(0, 8);
+  const tag = '<script type="text/javascript" src="js/' + name + '?v=' + hash + '"></script>';
+  const present = new RegExp('<script[^>]*src="js/' + name.replace('.', '\\.') + '[^"]*"></script>');
+  const found = html.match(present);
+
+  if (found) {
+    if (found[0] !== tag) {
+      html = html.replace(found[0], tag);
+      out('index.html: ' + name + ' cache tag -> ?v=' + hash);
+    }
+  } else {
+    html = html.replace(anchor, '$1$2\n$1' + tag);
+    out('index.html: added js/' + name + '?v=' + hash);
   }
-} else {
-  html = html.replace(
-    /([ \t]*)(<script[^>]+src="js\/clearCache\.min\.js[^"]*"><\/script>)/,
-    '$1$2\n$1' + scriptTag
-  );
-  out('index.html: added js/peaklab.js?v=' + hash);
+  // chain the next script directly after this one
+  anchor = new RegExp('([ \\t]*)(<script[^>]*src="js/' + name.replace('.', '\\.') + '[^"]*"></script>)');
 }
 
 // 2c. declare Mongolian as the document language
@@ -111,8 +116,11 @@ const finalHtml = fs.readFileSync(HTML_FILE, 'utf8');
 const problems = [];
 if (!check.mn) problems.push('config/language.json has no mn locale');
 if (!/<option value="mn"/.test(finalHtml)) problems.push('index.html has no mn <option>');
-if (!/js\/peaklab\.js/.test(finalHtml)) problems.push('index.html does not load js/peaklab.js');
-if (!fs.existsSync(path.join(root, 'js', 'peaklab.js'))) problems.push('js/peaklab.js is missing');
+for (const n of OURS) {
+  if (!fs.existsSync(path.join(root, 'js', n))) problems.push('js/' + n + ' is missing');
+  const ref = new RegExp('src="js/' + n.replace(/\./g, '\\.') + '\\?v=[0-9a-f]{8}"');
+  if (!ref.test(finalHtml)) problems.push('index.html does not load js/' + n + ' with a cache tag');
+}
 
 if (problems.length) {
   out('\nFAILED:');
