@@ -44,8 +44,14 @@ const merged = {};
 for (const k of upstreamKeys) {
   merged[k] = k in mn ? mn[k] : (langs.en && langs.en[k]) || '';
 }
-// keep any mn-only keys we deliberately added
-for (const k of Object.keys(mn)) if (!(k in merged)) merged[k] = mn[k];
+// Keep any mn-only keys we deliberately added, but never the _-prefixed
+// metadata (notes, the intentionally-English list): that is documentation for
+// whoever edits mn.json, not UI text, and one of them is an array - copying it
+// into the shipped locale would put a non-string where getI18n expects a string.
+for (const k of Object.keys(mn)) {
+  if (k.startsWith('_')) continue;
+  if (!(k in merged)) merged[k] = mn[k];
+}
 
 if (JSON.stringify(langs.mn) !== JSON.stringify(merged)) {
   langs.mn = merged;
