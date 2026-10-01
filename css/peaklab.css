@@ -1,0 +1,31 @@
+/*
+ * Peaklab: Mongolian typography.
+ *
+ * The vendor sets   .main { font-family: 'Microsoft YaHei', ..., Arial }
+ * Microsoft YaHei has basic Cyrillic (А-я) but NOT the Mongolian letters
+ * Ө ө Ү ү. Measured in the browser by drawing each glyph with two different
+ * fallback fonts: Ж ж come out the same width either way (YaHei supplies
+ * them); Ө ө Ү ү change with the fallback (YaHei does not). On Windows, where
+ * most customers are, every Ө and Ү was therefore drawn from Arial in the
+ * middle of a YaHei word. Nothing shows as a missing-glyph box, which is why
+ * it went unnoticed.
+ *
+ * Inter is the project's chosen face for Mongolian; its cyrillic-ext subset
+ * holds Ө and Ү. It is loaded from Google Fonts (index.html, same URL as the
+ * Peaklab driver portal) and applies only while Mongolian is active:
+ * js/peaklab.js keeps <html lang> in step with the language picker, so English
+ * and Chinese keep the vendor's own typography. If Google Fonts cannot be
+ * reached the stack degrades to exactly what the vendor had.
+ *
+ * Form controls do not inherit font-family on their own, so they are listed.
+ * The vendor has no icon fonts and no @font-face, so nothing here can break one.
+ */
+html[lang="mn"],
+html[lang="mn"] body,
+html[lang="mn"] .main,
+html[lang="mn"] button,
+html[lang="mn"] input,
+html[lang="mn"] select,
+html[lang="mn"] textarea {
+  font-family: Inter, 'Microsoft YaHei', -apple-system, PingFangSC-regular, miui, "Hiragino Sans GB", Arial, sans-serif;
+}

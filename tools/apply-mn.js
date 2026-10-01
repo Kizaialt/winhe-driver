@@ -109,6 +109,50 @@ for (const name of OURS) {
 // 2c. declare Mongolian as the document language
 html = html.replace(/<html lang="[^"]*">/, '<html lang="mn">');
 
+// 2d. Mongolian typography. The vendor's Microsoft YaHei has no Ө ө Ү ү, so on
+//     Windows every one of them was drawn from a different font mid-word.
+//     css/peaklab.css switches to Inter while <html lang="mn">; here we load
+//     Inter (non-blocking, same pattern as the driver portal) and link that
+//     stylesheet after the vendor's so it wins on order as well as specificity.
+const FONT_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
+const FONT_BLOCK = `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="${FONT_URL}">
+    <link rel="stylesheet" href="${FONT_URL}" media="print" onload="this.media='all';this.onload=null">
+    <noscript><link rel="stylesheet" href="${FONT_URL}"></noscript>`;
+
+const cssHash = crypto
+  .createHash('sha1')
+  .update(fs.readFileSync(path.join(root, 'css', 'peaklab.css')))
+  .digest('hex')
+  .slice(0, 8);
+const CSS_TAG = '<link rel="stylesheet" href="css/peaklab.css?v=' + cssHash + '">';
+
+function tagAround(src, needle) {            // whole <link ...> tag containing needle
+  const at = src.indexOf(needle);
+  if (at < 0) return null;
+  const start = src.lastIndexOf('<link', at);
+  const end = src.indexOf('>', at) + 1;
+  return src.slice(start, end);
+}
+
+const oursTag = tagAround(html, 'css/peaklab.css');
+if (oursTag) {
+  if (oursTag !== CSS_TAG) {
+    html = html.replace(oursTag, CSS_TAG);
+    out('index.html: peaklab.css cache tag -> ?v=' + cssHash);
+  }
+} else {
+  const vendorTag = tagAround(html, 'css/mainIndex8.min.css');
+  if (!vendorTag) {
+    out('WARNING: vendor stylesheet link not found; peaklab.css not linked');
+  } else {
+    const NL = String.fromCharCode(10) + '    ';
+    const fonts = html.indexOf('fonts.googleapis.com') >= 0 ? '' : NL + FONT_BLOCK;
+    html = html.replace(vendorTag, vendorTag + fonts + NL + CSS_TAG);
+    out('index.html: linked Inter + css/peaklab.css?v=' + cssHash);
+  }
+}
+
 if (html !== before) {
   fs.writeFileSync(HTML_FILE, html, 'utf8');
   changed++;

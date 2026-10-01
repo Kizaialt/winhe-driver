@@ -112,6 +112,11 @@
       try { if (typeof sel.onchange === 'function') sel.onchange(); } catch (e) { /* vendor bug */ }
       render(DEFAULT_LANG);
       remember(DEFAULT_LANG);
+    } else {
+      /* A returning visitor who chose another language. index.html is
+         lang="mn" statically, and css/peaklab.css switches to Inter on that
+         attribute, so without this their English page would be set in Inter. */
+      document.documentElement.lang = saved;
     }
     applyBranding();
     return true;
